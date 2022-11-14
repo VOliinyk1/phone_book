@@ -1,91 +1,81 @@
 CONTACTS = {}
 
 def command_parser(command_string: str) -> tuple:
-    """Takes string entered by user and parse it to command,[args] format"""
-    if command_string.lower() in('','.','bye','good bye','exit','close'):
-        return ('exit',[])
-    
-    if command_string.lower().startswith('show all'):
-        return('show all', [])
-    
-    command_elements = command_string.lower().split()
-    
-    return (command_elements[0], command_elements[1:]) if command_string else ''
+    command_elements = command_string.lower().split(' ')
+    command = command_elements[0]
+    args = ' '.join(i for i in command_elements[1:])
+    return command, args
 
-def question_answer_loop(command=[]):
-    """Takes input from user parse it and compile relative functions"""
-    while 'exit' not in command:
-        command_string = input('Enter command: ')
-        command, args = command_parser(command_string) 
-        do_command = COMMANDS.get(command)
-        
-        try:
-            do_command(args)
-        except: print('There no such command!')
-        
-        continue
+def split_args(args_string):
+    sep_args = args_string.split(' ')
+    name = sep_args[0]
+    phone = sep_args[1]
+    return name, phone
 
 def input_error(func):
     """Handle user's input"""
-    
-    def inner(*args: list):
-        if func.__name__ in ('add_handler', 'change_handler'):
-            try:
-                contact_name = args[0][0]
-                phone_number = ''.join(args[0][1:])
-                func(contact_name, phone_number)
-            except: print('This command require contact name and phone number')
-        
-        elif func.__name__ == 'phone_handler':
-            try:
-                contact_name = args[0][0]
-                func(contact_name)
-            except: print('This command require contact name')
-        else:
-            try:
-                func()
-            except: print('There no such a command!')
-    return inner
+    def wrap(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError:
+            return 'Wrong name'
+        except ValueError:
+            return 'Not found'
+        except IndexError:
+            return 'type name and number'
+        except TypeError:
+            return 'Enter name and phone'
+    return wrap
+
+def do_command(input):
+    new_input = input
+    args = ''
+    for key in COMMANDS:
+        if input.startswith(key):
+            new_input = key
+            args = input[len(new_input):].strip()
+    result = COMMANDS.get(new_input, lambda : 'enter one of available commands' )
+    return result(args) if args else result()
 
 @input_error
 def hello_handler():
     """Print hello!"""
-    print('hello!')
+    return 'hello!'
 
 @input_error
-def add_handler(contact_name, phone_number):
+def add_handler(args):
     """Add new contact"""
-    if contact_name not in CONTACTS.keys():
-        CONTACTS[contact_name] = phone_number
-    else: print(f"Contact {contact_name} is already exists in phone book")
-    
-    print(CONTACTS)
+    name, phone = split_args(args)
+    if name not in CONTACTS.keys():
+        CONTACTS[name] = phone
+        return f'{name} : {phone} is added'
+    else: return f'contact {name} already exists!'
 
 @input_error
-def change_handler(contact_name, phone_number):
+def change_handler(args):
     """Change contact phone number by name"""
-    if contact_name in CONTACTS.keys():
-        CONTACTS[contact_name] = phone_number
-    else: print("Ther's no such contact in phonebook")
-    
-    print(CONTACTS)
-    
+    name, phone = split_args(args)
+    if name in CONTACTS:
+        CONTACTS[name] = phone
+        return f'Contact {name} is changed to {phone}'
+    else: return 'No such contact in the phone book'
+     
 @input_error
-def phone_handler(contact_name):
+def phone_handler(name):
     """Shows phone number by name"""
-    if contact_name in CONTACTS:
-        print(CONTACTS[contact_name])
-    else: print("Ther's no such contact in phonebook")
-
+    if name in CONTACTS.keys():
+        return CONTACTS[name]
+    else: raise ValueError('Contact is not found')
+    
 @input_error
 def show_all_handler():
     """shows all contacts"""
-    print(CONTACTS)
+    return CONTACTS
 
 @input_error
 def good_bye_handler():
     """Print Bye"""
-    print("Bye!")
+    return "Bye!"
 
 COMMANDS = {'hello': hello_handler,
             'show all': show_all_handler,
@@ -96,7 +86,12 @@ COMMANDS = {'hello': hello_handler,
             }
 
 def main():
-    question_answer_loop()
+    while True:
+        user_input = input('Enter command ')
+        result = do_command(user_input)
+        print(result)
+        if result == 'Bye!':
+            break 
 
 if __name__ == '__main__':
     main()
