@@ -14,7 +14,17 @@ class AddressBook(UserDict):
                     page = []             
                   
     def search_contact(self, name, phone):
-            return f"{name} : {phone}"
+            if name.isdigit():
+                phone = name
+            if phone:
+                for contact, record in self.items():
+                    if phone in record.get_record_phones():
+                        return contact, record.phones
+            elif name:
+                for contact, record in self.items():
+                    if name == record.name.value:
+                        return contact, record.phones
+            else: f'Contact not founded'
                 
     def add_record(self, record):
         if record.get_record_phones():
@@ -22,12 +32,9 @@ class AddressBook(UserDict):
             return f"Record {record.name.value} {record.get_record_phones()} is added"
         else: return "Record is not added"
 
-from collections import UserDict
-from datetime import date, timedelta      
-import datetime
 class Field:
-    def __init__(self, value=None):
-        self._value = value
+    def __init__(self, field_value=None):
+        self._value = field_value
     
     @property
     def value(self):
@@ -42,11 +49,9 @@ class Name(Field):
     def __repr__(self):
         return str(self.value)
     
-    @property
-    def value(self):
-        return super().value
+    
 
-    @value.setter
+    @Field.value.setter
     def value(self, new_value):
         self._value = new_value
 
@@ -54,12 +59,8 @@ class Name(Field):
 class Phone(Field):
     def __repr__(self):
         return str(self.value)
-    
-    @property
-    def value(self):
-        return super().value
 
-    @value.setter
+    @Field.value.setter
     def value(self, new_value):
         self._value = new_value if 10 <= len(new_value) <= 12 else None
 

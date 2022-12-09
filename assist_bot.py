@@ -1,4 +1,4 @@
-from adress_book import *
+from adress_book import AddressBook, Record
 
 CONTACTS = AddressBook()
 
@@ -90,17 +90,8 @@ def add_new_record(args):
 
 @input_error
 def search_records(name, phone=''):
-    if name.isdigit():
-        phone = name
-    if phone:
-        for contact, record in CONTACTS.items():
-            if phone in record.get_record_phones():
-                return CONTACTS.search_contact(contact, record.phones)
-    elif name:
-        for contact, record in CONTACTS.items():
-            if name == record.name.value:
-                return CONTACTS.search_contact(contact, record.phones)
-    else: f'Contact not founded'
+    finded_name, finded_phone = CONTACTS.search_contact(name, phone)
+    return f'{finded_name} : {finded_phone}'
 
 
 
