@@ -1,7 +1,17 @@
 from collections import UserDict
 from datetime import date, timedelta      
 import datetime
-class AddressBook(UserDict):                                                              
+class AddressBook(UserDict):
+    # def initialize_saved_records(self):
+    #     pass
+    
+    # def save_records(self):
+    #     for name, record in self.data.items():
+
+
+    #     # data = {'names' : list(self.data.keys()),
+    #     #         'records' : }
+
     def iterator(self, n=1):
         page = []
         for i in range(len(list(self.data.items()))):
@@ -74,7 +84,7 @@ class Birthday(Field):
     def value(self):
         return super().value
 
-    @value.setter
+    @Field.value.setter
     def value(self, new_value):
         if new_value:
             date_elems = len(new_value)
